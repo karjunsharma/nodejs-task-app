@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
 
-const connectionUrl = 'mongodb://localhost:27017/tasks-manager-api?authSource=admin'
+const connectionUrl = process.env.MONGODB_URL
 
 mongoose.connect(connectionUrl, {
-    "user": "admin",
-    "pass": "admin",
+    "user": process.env.MONGODB_USER,
+    "pass": process.env.MONGODB_PASSWORD,
     "useNewUrlParser": true,
     // useCreateIndex: true
 })
