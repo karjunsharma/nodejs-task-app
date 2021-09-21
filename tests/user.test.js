@@ -1,30 +1,11 @@
 const request = require('supertest')
 const app = require('../src/app')
 const User = require('../src/models/user')
-const jwt = require('jsonwebtoken')
-const mongoose = require('mongoose')
-const { patch } = require('../src/app')
+const { setupDatabase, userOne, userOneId } = require('./fixtures/db')
 
-const userOneId = new mongoose.Types.ObjectId()
 
-const token = jwt.sign({ _id: userOneId }, process.env.JWT_SECRET)
 
-const userOne = {
-    _id: userOneId,
-    name: 'Arjun Sharma',
-    email: 'abc@abc.com',
-    password: 'Mypass1234',
-    tokens: [
-        {
-           token
-        }
-    ]
-}
-
-beforeEach(async () => {
-    await User.deleteMany({})
-    await new User(userOne).save()
-})
+beforeEach(setupDatabase)
 
 
 test('Should signup a new user', async () => {
@@ -56,13 +37,17 @@ test('Should login existing user', async () => {
 })
 
 test('Should not login nonexisting user', async () => {
-    await request(app).post('/users/login').send({
+    const response = await request(app).post('/users/login').send({
         email: userOne.email,
         password: "bad pass"
     }).expect(400)
+
+    console.log(response.body)
 })
 
 test('Should get profile for user', async () => {
+
+    console.log(userOne.tokens)
     await request(app)
     .get('/users/me')
     .set('Authorization',`Bearer ${userOne.tokens[0].token}`)
@@ -107,7 +92,6 @@ test('Should not update invalid user field', async () => {
         .send({ location: 'Jaipur' })
         .expect(400)
 
-    
 })
 
 test('Should not get profile for unauthrnticated user', async () => {
